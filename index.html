@@ -177,8 +177,9 @@
             display: inline-block; border-bottom: 2px solid #f57f17; 
         }
         
-        .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; max-width: 900px; margin: 0 auto; }
-        .setup-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; border-radius: 8px; } /* border-radiusを追加 */
+        /* 準備エリアのグリッドを3列にも対応できるよう自動調整に修正 */
+        .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; text-align: left; max-width: 950px; margin: 0 auto; }
+        .setup-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; border-radius: 8px; } 
         .icon-box { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 1.1rem; flex-shrink: 0; }
 
         .visual-guide-container { display: flex; justify-content: space-around; gap: 10px; margin-top: 5px; }
@@ -210,6 +211,22 @@
             50% { opacity: 0.2; }
         }
 
+        /* くり下がり時のエラーハイライト用（1つの繋がった赤い点滅枠） */
+        .joined-highlight {
+            position: absolute;
+            box-sizing: border-box;
+            border: 4px dashed #f44336; /* 赤色 */
+            border-radius: 8px; 
+            pointer-events: none;
+            animation: blink-highlight-red 0.8s infinite;
+            z-index: 1000;
+            box-shadow: 0 0 8px rgba(244, 67, 54, 0.4) inset, 0 0 8px rgba(244, 67, 54, 0.4);
+        }
+        @keyframes blink-highlight-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
         /* ワークスペース */
         .workspace { display: none; flex-direction: row; gap: 15px; align-items: stretch; margin-top: 5px; flex: 1; overflow: hidden; min-height: 0; }
         
@@ -220,6 +237,7 @@
             display: grid; grid-template-rows: 80px 80px 80px 80px; 
             border: 2px solid #555; background: #fff; 
             width: fit-content;
+            position: relative; /* 枠の基準点にするために追加 */
         }
         .hissan-grid.cols-3 { grid-template-columns: repeat(3, 80px); }
         .hissan-grid.cols-4 { grid-template-columns: repeat(4, 80px); }
@@ -374,6 +392,9 @@
 
         .token.ghost { opacity: 0.5 !important; pointer-events: none !important; }
         .token.used { opacity: 0.2 !important; pointer-events: none !important; filter: grayscale(100%); }
+
+        /* 追加：ひくかずゾーン（中段）に置かれたコインやブロックは30%の透過にする */
+        .coin-zone[data-row="mid"] .token { opacity: 0.3 !important; }
         
         .token-container { display: flex !important; flex-direction: row; flex-wrap: wrap; gap: 2px !important; width: fit-content; justify-content: center; align-items: start; }
         .container-grid { display: grid !important; grid-template-columns: repeat(5, auto) !important; gap: 4px !important; }
@@ -629,25 +650,12 @@
                             <span style="font-size:0.8rem; color:#666;">✅すると じどうで こたえが はいるよ</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="instruction-section">
-                <div class="instruction-title">2. もくひょう</div>
-                <div class="setup-grid">
+                    <!-- おんせいガイド設定を追加 -->
                     <div class="setup-item">
-                        <div class="icon-box" style="background:var(--level-color); color:white;">Lv</div>
+                        <div class="icon-box">🔊</div>
                         <div>
-                            <strong>レベルアップ！</strong><br>
-                            5もん せいかいするごとに しょうごうが かわるよ！
-                        </div>
-                    </div>
-                    <div class="setup-item">
-                        <div class="icon-box" style="background:#78909c; color:white;">↺</div>
-                        <div>
-                            <strong>はじめから</strong><br>
-                            <button id="reset-progress-btn" class="btn" style="padding:2px 8px; font-size:0.8rem;">リセット</button>
-                            <span style="font-size:0.8rem;">さいしょに もどります</span>
+                            <strong><label class="auto-answer-label"><input type="checkbox" id="setting-audio-guide" checked> おんせいガイド</label></strong><br>
+                            <span style="font-size:0.8rem; color:#666;">✅すると おんせいで おしえてくれるよ</span>
                         </div>
                     </div>
                 </div>
@@ -706,13 +714,18 @@
                         </svg>
                     </div>
                     <div class="visual-guide-item">
-                        <span class="visual-guide-text">③ ひっ算は<br>ひき算に するよ！</span>
+                        <span class="visual-guide-text">③ ひっ算の こたえを<br>にゅうりょく します</span>
                         <svg viewBox="0 0 120 100">
                             <rect x="15" y="20" width="90" height="70" fill="#fff" stroke="#555" stroke-width="2" />
                             <line x1="45" y1="20" x2="45" y2="90" stroke="#ddd" stroke-width="1" /><line x1="75" y1="20" x2="75" y2="90" stroke="#ddd" stroke-width="1" />
                             <line x1="15" y1="43" x2="105" y2="43" stroke="#ddd" stroke-width="1" /><line x1="15" y1="66" x2="105" y2="66" stroke="#333" stroke-width="2" />
                             <text x="60" y="38" text-anchor="middle" font-size="16" fill="#333">4</text><text x="90" y="38" text-anchor="middle" font-size="16" fill="#333">2</text>
                             <text x="90" y="61" text-anchor="middle" font-size="16" fill="#333">7</text><text x="25" y="61" text-anchor="middle" font-size="16" fill="#333">ー</text>
+                            
+                            <!-- 答えの入力枠 -->
+                            <rect x="47" y="69" width="26" height="20" rx="3" fill="none" stroke="#4da3ff" stroke-width="1.5" />
+                            <rect x="77" y="69" width="26" height="20" rx="3" fill="none" stroke="#4da3ff" stroke-width="1.5" />
+                            
                             <text x="60" y="84" text-anchor="middle" font-size="16" fill="#4da3ff" font-weight="bold">3</text><text x="90" y="84" text-anchor="middle" font-size="16" fill="#4da3ff" font-weight="bold">5</text>
                         </svg>
                     </div>
@@ -794,6 +807,7 @@
             input2: document.getElementById('input2'),
             headerAns: document.getElementById('header-answer'),
             settingAnswer: document.getElementById('setting-auto-answer'),
+            settingAudio: document.getElementById('setting-audio-guide'),
             bigText: document.getElementById('big-text'),
             levelDisplay: document.getElementById('level-display'),
             titleDisplay: document.getElementById('title-display'),
@@ -816,7 +830,7 @@
         
         // 状態管理
         const state = {
-            num1: 0, num2: 0, ans: 0, mode: 'coin', autoAnswer: false, questionCount: 0,
+            num1: 0, num2: 0, ans: 0, mode: 'coin', autoAnswer: false, audioGuide: true, questionCount: 0,
             isAnsweredCorrectly: false, audioContextStarted: false, audioCache: {},
             lastPraiseIndex: -1,
             lastGuideTime: 0,
@@ -827,7 +841,8 @@
             dragging: null,
             borrowFrom10: false,
             borrowFrom100: false,
-            idleTimer: null
+            idleTimer: null,
+            lastSpokenGuide: ""
         };
 
         // 不要なスペースを削除し、スムーズに読めるように調整
@@ -857,6 +872,7 @@
                 questionCount: state.questionCount,
                 mode: state.mode,
                 autoAnswer: state.autoAnswer,
+                audioGuide: state.audioGuide,
                 isPlaying: state.isPlaying,
                 num1: state.num1,
                 num2: state.num2,
@@ -901,6 +917,11 @@
                         state.autoAnswer = data.autoAnswer;
                         if (els.settingAnswer) els.settingAnswer.checked = state.autoAnswer;
                     }
+                    
+                    if (data.audioGuide !== undefined) {
+                        state.audioGuide = data.audioGuide;
+                        if (els.settingAudio) els.settingAudio.checked = state.audioGuide;
+                    }
 
                     updateLevelUI(); 
 
@@ -940,8 +961,7 @@
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        // 声のトーンを自然な高さ（cheerfully and clearly）に戻す
-                        contents: [{ parts: [{ text: `Say cheerfully and clearly to a child in Japanese: ${text}` }] }],
+                        contents: [{ parts: [{ text: `Say cheerfully and clearly with a high-pitched voice to a child in Japanese: ${text}` }] }],
                         generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } }
                     })
                 });
@@ -966,7 +986,10 @@
             }
         }
         
-        async function speak(text) {
+        // force が true の場合は、設定がOFFでも強制的に再生する（説明ボタン用）
+        async function speak(text, force = false) {
+            if (!state.audioGuide && !force) return;
+            
             if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             if (!state.audioContextStarted) await unlockAudio();
@@ -978,8 +1001,7 @@
                 const voices = window.speechSynthesis.getVoices();
                 const bestVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('ja')) || voices.find(v => v.lang.includes('ja'));
                 if (bestVoice) uttr.voice = bestVoice;
-                // ピッチを 1.6 から 1.2（自然な高さ）に戻す
-                uttr.rate = 1.0; uttr.pitch = 1.2; uttr.volume = 1.0;
+                uttr.rate = 1.0; uttr.pitch = 1.6; uttr.volume = 1.0;
                 window.speechSynthesis.speak(uttr);
             }
         }
@@ -998,6 +1020,41 @@
             }
         }
 
+        // 赤い点滅枠をすべて消す関数
+        function clearErrorHighlights() {
+            document.querySelectorAll('.joined-highlight').forEach(el => el.remove());
+        }
+        
+        // ひかれる数とひく数の2つの枠をまとめて1つの長方形で囲む関数
+        function drawHighlight(containerId, topId, midId) {
+            const container = document.getElementById(containerId);
+            const topEl = document.getElementById(topId);
+            const midEl = document.getElementById(midId);
+            
+            if (!container || !topEl || !midEl) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const topRect = topEl.getBoundingClientRect();
+            const midRect = midEl.getBoundingClientRect();
+            
+            const highlight = document.createElement('div');
+            highlight.className = 'joined-highlight';
+            
+            // コンテナからの相対座標を計算して、2つの枠を包み込む1つの長方形を作る
+            const t = topRect.top - containerRect.top;
+            const l = topRect.left - containerRect.left;
+            const w = topRect.width;
+            const h = midRect.bottom - topRect.top;
+            
+            // 線が見切れないように少しだけ内側に配置
+            highlight.style.top = (t + 2) + 'px';
+            highlight.style.left = (l + 2) + 'px';
+            highlight.style.width = (w - 4) + 'px';
+            highlight.style.height = (h - 4) + 'px';
+            
+            container.appendChild(highlight);
+        }
+
         function resetIdleTimer() {
             clearIdleTimer();
             // ゲーム中かつ正解済みでない場合のみ30秒タイマーセット
@@ -1008,13 +1065,14 @@
             }
         }
 
-        function updateGuide(speakInstruction = false) {
+        // 引数に silent (音声を鳴らさないフラグ) を追加
+        function updateGuide(speakInstruction = false, silent = false) {
             if (state.isDroppedDown) {
                 hideGuideArrows();
                 return;
             }
             
-            // 必要な数の値（桁数ではなく実際の値。例: 20, 5, 100）
+            // 必要な数の値
             const req100 = Math.floor(state.num2 / 100) * 100;
             const req10 = Math.floor((state.num2 % 100) / 10) * 10;
             const req1 = state.num2 % 10;
@@ -1046,36 +1104,62 @@
             const cur1 = getCurCount(1);
             
             hideGuideArrows();
+            clearErrorHighlights(); // ガイド更新前にハイライトをリセット
 
-            let msg = "";
-
-            // 完全一致していれば終了判定へ
             if (needBot100 === 0 && needBot10 === 0 && needBot1 === 0) {
                 return;
             }
 
             const itemText = state.mode === 'block' ? 'ブロック' : 'おかね';
+            let msg = "";
+            const kana = ["ぜろ", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"];
 
-            // 一の位が足りない時
-            if (needBot1 > 0 && cur1 < needBot1) {
-                document.getElementById('arrow-carry-10')?.style.setProperty('display', 'block');
-                if (speakInstruction) msg = `${state.num1 % 10}から、${state.num2 % 10}はひけないから、十のくらいからくりさげよう。`;
-            } 
-            // 十の位が足りない時
-            else if (needBot10 > 0 && cur10 < needBot10) {
-                document.getElementById('arrow-carry-100')?.style.setProperty('display', 'block');
-                if (speakInstruction) msg = `${Math.floor((state.num1 % 100)/10)}から、${Math.floor((state.num2 % 100)/10)}はひけないから、百のくらいからくりさげよう。`;
-            } 
-            // 足りているので下に降ろす時
-            else if (needBot100 > 0 || needBot10 > 0 || needBot1 > 0) {
-                if (needBot100 > 0) { const a = document.getElementById('arrow-top-100'); if(a) a.style.display = 'block'; }
-                if (needBot10 > 0) { const a = document.getElementById('arrow-top-10'); if(a) a.style.display = 'block'; }
-                if (needBot1 > 0) { const a = document.getElementById('arrow-top-1'); if(a) a.style.display = 'block'; }
-                if (speakInstruction) msg = `${itemText}を、ひくかずのぶんだけ、したにおろそう。`;
+            // 下の位から順番にガイドを行う
+            if (needBot1 > 0) {
+                if (cur1 < needBot1) {
+                    document.getElementById('arrow-carry-10')?.style.setProperty('display', 'block');
+                    const start1 = (cur1 + mid1);
+                    const req1_val = state.num2 % 10;
+                    const s1 = kana[start1] || start1;
+                    const r1 = kana[req1_val] || req1_val;
+                    // 読点を減らしてスムーズに
+                    msg = `${s1}から、${r1}はひけないから、十のくらいからくりさげるよ。`;
+
+                    // 一の位の筆算とコインの枠を、それぞれ1つの長方形で赤く点滅させる
+                    drawHighlight('hissan-grid', 'hissan-top-1', 'hissan-mid-1');
+                    drawHighlight('coin-table', 'zone-top-1', 'zone-mid-1');
+                } else {
+                    document.getElementById('arrow-top-1')?.style.setProperty('display', 'block');
+                    if (speakInstruction) msg = `${itemText}を、ひくかずのぶんだけしたにおろそう。`;
+                }
+            } else if (needBot10 > 0) {
+                if (cur10 < needBot10) {
+                    document.getElementById('arrow-carry-100')?.style.setProperty('display', 'block');
+                    const start10 = (cur10 + mid10) / 10;
+                    const req10_val = Math.floor((state.num2 % 100) / 10);
+                    const s10 = kana[start10] || start10;
+                    const r10 = kana[req10_val] || req10_val;
+                    // 読点を減らしてスムーズに
+                    msg = `${s10}から、${r10}はひけないから、百のくらいからくりさげるよ。`;
+
+                    // 十の位の筆算とコインの枠を、それぞれ1つの長方形で赤く点滅させる
+                    drawHighlight('hissan-grid', 'hissan-top-10', 'hissan-mid-10');
+                    drawHighlight('coin-table', 'zone-top-10', 'zone-mid-10');
+                } else {
+                    document.getElementById('arrow-top-10')?.style.setProperty('display', 'block');
+                    if (speakInstruction) msg = `${itemText}を、ひくかずのぶんだけしたにおろそう。`;
+                }
+            } else if (needBot100 > 0) {
+                document.getElementById('arrow-top-100')?.style.setProperty('display', 'block');
+                if (speakInstruction) msg = `${itemText}を、ひくかずのぶんだけしたにおろそう。`;
             }
 
-            if (msg !== "") {
-                speak(msg);
+            if (msg !== "" && !silent) {
+                // 強制読み上げか、前回と違うメッセージの場合のみ喋る
+                if (speakInstruction || state.lastSpokenGuide !== msg) {
+                    speak(msg);
+                    state.lastSpokenGuide = msg;
+                }
             }
         }
 
@@ -1100,6 +1184,8 @@
                 });
             });
             
+            clearErrorHighlights(); // 初期化時にハイライトを消す
+
             state.midCounts = { 100: 0, 10: 0, 1: 0 };
             state.isDroppedDown = false;
             if (els.dropdownContainer) els.dropdownContainer.style.display = 'none';
@@ -1132,9 +1218,9 @@
                 }
             });
 
-            checkMidComplete(); // もしnum2が0の場合はすぐボタンが出る
+            checkMidComplete(); 
             if (!state.isDroppedDown) {
-                updateGuide(false);
+                updateGuide(false, true); // 初期化の瞬間は音を出さない（二重発声防止）
             } else {
                 hideGuideArrows();
             }
@@ -1163,6 +1249,7 @@
             if (el.classList.contains('ghost') || el.classList.contains('used')) return; 
             
             resetIdleTimer();
+            clearErrorHighlights(); // 動かし始めたら赤い点滅を消す
 
             e.preventDefault(); unlockAudio();
             
@@ -1229,7 +1316,7 @@
                     if (baseVal === targetBase) {
                         const currentMidCount = state.midCounts[baseVal] || 0;
                         
-                        // ひく数の上限を設定（実際の値に換算して比較）
+                        // ひく数の上限を設定
                         let reqVal = 0;
                         if (baseVal === 100) reqVal = Math.floor(state.num2 / 100) * 100;
                         if (baseVal === 10) reqVal = Math.floor((state.num2 % 100) / 10) * 10;
@@ -1269,8 +1356,6 @@
                 for(let i=0; i<10; i++) container.appendChild(createToken(targetBase, targetBase, true));
             }
             
-            speak("くりさげたよ。");
-            
             if (targetBase === 10) {
                 state.borrowFrom100 = true;
             } else if (targetBase === 1) {
@@ -1280,16 +1365,13 @@
             renderHissan();
             saveProgress();
             
-            if (state.questionCount === 0) {
-                // 1問目はすぐアクションをガイドする
-                setTimeout(() => {
-                    updateGuide(true);
-                }, 1500);
-            } else {
-                // 2問目以降は矢印表示のみ行い、音声は30秒無操作時に任せる
-                updateGuide(false);
+            speak("くりさげたよ。");
+            
+            // 「くりさげたよ。」の音声が鳴り終わる頃に、次の指示と矢印を出す
+            setTimeout(() => {
+                updateGuide(true);
                 resetIdleTimer();
-            }
+            }, 1200);
         }
 
         function performSubtract(sourceEl, targetZone, baseVal, val) {
@@ -1330,7 +1412,12 @@
             const mid1 = state.midCounts[1] || 0;
             
             if (mid100 === req100 && mid10 === req10 && mid1 === req1) {
-                if (els.dropdownContainer && els.dropdownContainer.style) els.dropdownContainer.style.display = 'flex';
+                if (els.dropdownContainer && els.dropdownContainer.style) {
+                    if (els.dropdownContainer.style.display !== 'flex') {
+                        els.dropdownContainer.style.display = 'flex';
+                        speak("ボタンをおして、のこったかずを、おろします。");
+                    }
+                }
             } else {
                 if (els.dropdownContainer && els.dropdownContainer.style) els.dropdownContainer.style.display = 'none';
             }
@@ -1354,10 +1441,8 @@
                 }
 
                 // FLIP Animation
-                // 1. First & 残像の作成
                 const firstRects = Array.from(tokensToMove).map(t => {
                     const rect = t.getBoundingClientRect();
-                    // 元の場所に透過で残すためのクローンを作成
                     const clone = t.cloneNode(true);
                     clone.classList.add('used');
                     clone.style.pointerEvents = 'none';
@@ -1365,7 +1450,6 @@
                     return rect;
                 });
                 
-                // 2. DOM Move
                 tokensToMove.forEach(t => {
                     const baseVal = t.dataset.baseVal;
                     const targetBotZone = document.getElementById(`zone-bot-${baseVal}`);
@@ -1377,11 +1461,10 @@
                             targetBotZone.appendChild(container);
                         }
                         container.appendChild(t);
-                        t.style.pointerEvents = 'none'; // こたえゾーンではドラッグ不可
+                        t.style.pointerEvents = 'none';
                     }
                 });
 
-                // 3. Last & Invert & Play
                 tokensToMove.forEach((t, i) => {
                     const first = firstRects[i];
                     const last = t.getBoundingClientRect();
@@ -1393,7 +1476,7 @@
                     
                     requestAnimationFrame(() => {
                         t.style.transform = '';
-                        t.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'; // バウンドするような動き
+                        t.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'; 
                     });
                 });
 
@@ -1405,49 +1488,32 @@
             });
         }
 
-        // こたえ自動ONのとき、現在残っている数（元の数 - 引いた数）をリアルタイムに筆算の枠に表示する関数
         function syncHissanWithBot() {
-            if (state.isAnsweredCorrectly) return;
-
-            if (!els.settingAnswer || !els.settingAnswer.checked) {
-                if (document.getElementById('ans-1')) document.getElementById('ans-1').value = "";
-                if (document.getElementById('ans-10')) document.getElementById('ans-10').value = "";
-                if (document.getElementById('ans-100')) document.getElementById('ans-100').value = "";
-                return; 
-            }
+            if (!els.settingAnswer || !els.settingAnswer.checked) return; 
             
-            let sub100 = state.midCounts[100] || 0;
-            let sub10 = state.midCounts[10] || 0;
-            let sub1 = state.midCounts[1] || 0;
-            let totalSubtracted = sub100 + sub10 + sub1;
-
-            let currentRemain = state.num1 - totalSubtracted;
-            let isAnyRegrouped = state.borrowFrom10 || state.borrowFrom100;
-
-            // 操作が全く行われていない（1つも引いていないし、繰り下げもしていない、かつボタンも押していない）場合は空欄にする
-            if (totalSubtracted === 0 && !isAnyRegrouped && !state.isDroppedDown) {
-                if (document.getElementById('ans-1')) document.getElementById('ans-1').value = "";
-                if (document.getElementById('ans-10')) document.getElementById('ans-10').value = "";
-                if (document.getElementById('ans-100')) document.getElementById('ans-100').value = "";
-                return;
-            }
-
-            let rem1 = currentRemain % 10;
-            let rem10 = Math.floor((currentRemain % 100) / 10);
-            let rem100 = Math.floor(currentRemain / 100);
+            let botSum = { 100: 0, 10: 0, 1: 0 };
+            
+            ['100', '10', '1'].forEach(baseStr => {
+                const baseVal = parseInt(baseStr);
+                const zone = document.getElementById(`zone-bot-${baseVal}`);
+                if (zone) {
+                    const tokens = zone.querySelectorAll('.token');
+                    let sum = 0;
+                    tokens.forEach(t => { 
+                        if (t && t.dataset && t.dataset.val) sum += parseInt(t.dataset.val); 
+                    });
+                    botSum[baseVal] = sum;
+                }
+            });
 
             if (document.getElementById('ans-1')) {
-                document.getElementById('ans-1').value = rem1;
+                document.getElementById('ans-1').value = botSum[1];
             }
             if (document.getElementById('ans-10')) {
-                if (rem100 > 0 || rem10 > 0) {
-                    document.getElementById('ans-10').value = rem10;
-                } else {
-                    document.getElementById('ans-10').value = "";
-                }
+                document.getElementById('ans-10').value = (botSum[10] > 0 || botSum[100] > 0) ? Math.floor(botSum[10] / 10) : "";
             }
             if (document.getElementById('ans-100')) {
-                document.getElementById('ans-100').value = rem100 > 0 ? rem100 : "";
+                document.getElementById('ans-100').value = botSum[100] > 0 ? Math.floor(botSum[100] / 100) : "";
             }
         }
 
@@ -1458,13 +1524,11 @@
             const is3Digit = state.num1 >= 100;
             const cols = is3Digit ? 4 : 3;
             
-            // クラスの設定で列数を自動切り替え
             els.hissanGrid.className = `hissan-grid cols-${cols}`;
             
             const d1 = { 100: Math.floor(state.num1 / 100), 10: Math.floor((state.num1 % 100) / 10), 1: state.num1 % 10 };
             const d2 = { 100: Math.floor(state.num2 / 100), 10: Math.floor((state.num2 % 100) / 10), 1: state.num2 % 10 };
             
-            // 行0: 繰り下がりメモ
             let carryVals = [];
             if (is3Digit) {
                 carryVals.push({ text: "", active: false });
@@ -1485,43 +1549,45 @@
                 els.hissanGrid.appendChild(cell);
             });
 
-            // 行1: ひかれる数（斜線対応）
+            // 行1: ひかれる数（斜線対応とID付与）
             let topVals = [];
             if (is3Digit) {
-                topVals.push({ val: "", strike: false });
-                topVals.push({ val: d1[100], strike: state.borrowFrom100 });
-                topVals.push({ val: d1[10], strike: state.borrowFrom10 });
-                topVals.push({ val: d1[1], strike: false });
+                topVals.push({ val: "", strike: false, id: null });
+                topVals.push({ val: d1[100], strike: state.borrowFrom100, id: 'hissan-top-100' });
+                topVals.push({ val: d1[10], strike: state.borrowFrom10, id: 'hissan-top-10' });
+                topVals.push({ val: d1[1], strike: false, id: 'hissan-top-1' });
             } else {
-                topVals.push({ val: "", strike: false });
-                topVals.push({ val: d1[10], strike: state.borrowFrom10 });
-                topVals.push({ val: d1[1], strike: false });
+                topVals.push({ val: "", strike: false, id: null });
+                topVals.push({ val: d1[10], strike: state.borrowFrom10, id: 'hissan-top-10' });
+                topVals.push({ val: d1[1], strike: false, id: 'hissan-top-1' });
             }
 
             topVals.forEach((t) => {
                 const cell = document.createElement('div');
                 cell.className = 'hissan-cell';
+                if (t.id) cell.id = t.id; // 点滅させるためのIDをセット
                 if (t.strike) cell.classList.add('strike-through');
                 cell.textContent = t.val; 
                 els.hissanGrid.appendChild(cell);
             });
             
-            // 行2: ひく数
+            // 行2: ひく数（ID付与）
             let midVals = [];
             if (is3Digit) {
-                midVals.push({ val: "ー", isOp: true });
-                midVals.push({ val: d2[100] || "", isOp: false });
-                midVals.push({ val: d2[10] || "", isOp: false });
-                midVals.push({ val: d2[1], isOp: false });
+                midVals.push({ val: "ー", isOp: true, id: null });
+                midVals.push({ val: d2[100] || "", isOp: false, id: 'hissan-mid-100' });
+                midVals.push({ val: d2[10] || "", isOp: false, id: 'hissan-mid-10' });
+                midVals.push({ val: d2[1], isOp: false, id: 'hissan-mid-1' });
             } else {
-                midVals.push({ val: "ー", isOp: true });
-                midVals.push({ val: d2[10] || "", isOp: false });
-                midVals.push({ val: d2[1], isOp: false });
+                midVals.push({ val: "ー", isOp: true, id: null });
+                midVals.push({ val: d2[10] || "", isOp: false, id: 'hissan-mid-10' });
+                midVals.push({ val: d2[1], isOp: false, id: 'hissan-mid-1' });
             }
 
             midVals.forEach((m) => {
                 const cell = document.createElement('div');
                 cell.className = 'hissan-cell hissan-bottom-line';
+                if (m.id) cell.id = m.id; // 点滅させるためのIDをセット
                 if (m.isOp) {
                     const op = document.createElement('span');
                     op.className = 'operator';
@@ -1533,7 +1599,6 @@
                 els.hissanGrid.appendChild(cell);
             });
             
-            // 行3: こたえ
             let botIds = [];
             if (is3Digit) {
                 botIds.push(null);
@@ -1560,7 +1625,6 @@
                 els.hissanGrid.appendChild(cell);
             });
             
-            // 常に答え欄の状態を同期する
             syncHissanWithBot();
         }
 
@@ -1573,49 +1637,43 @@
             const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
             if (count <= 5) { 
-                // 2けた-1けた 繰り下がりなし。十の位は2〜5
                 let t1 = rand(2, 5);
                 let u2 = rand(1, 8);
-                // 一の位が引いて0になる問題が多すぎるのを防ぐため、必ず u2 より大きい数にする
-                let u1 = rand(u2 + 1, 9);
-                n1 = t1 * 10 + u1;
+                let randU1 = rand(u2 + 1, 9);
+                n1 = t1 * 10 + randU1;
                 n2 = u2;
             } 
             else if (count <= 10) { 
-                // 2けた-1けた 繰り下がりあり
                 let t1 = rand(2, 9);
-                let u1 = rand(0, 8);
-                let u2 = rand(u1 + 1, 9);
-                n1 = t1 * 10 + u1;
+                let randU1 = rand(0, 8);
+                let u2 = rand(randU1 + 1, 9);
+                n1 = t1 * 10 + randU1;
                 n2 = u2;
             } 
             else if (count <= 20) { 
-                // 2けた-2けた 繰り下がりあり
                 let t2 = rand(1, 8);
                 let t1 = rand(t2 + 1, 9);
-                let u1 = rand(0, 8);
-                let u2 = rand(u1 + 1, 9);
-                n1 = t1 * 10 + u1;
+                let randU1 = rand(0, 8);
+                let u2 = rand(randU1 + 1, 9);
+                n1 = t1 * 10 + randU1;
                 n2 = t2 * 10 + u2;
             } 
             else if (count <= 25) { 
-                // 3けた-2けた 十の位は繰り下がらない
                 let h1 = rand(1, 9);
                 let t2 = rand(1, 7);
                 let t1 = rand(t2 + 1, 9);
-                let u1 = rand(0, 8);
-                let u2 = rand(u1 + 1, 9); // 一の位は繰り下がりあり
-                n1 = h1 * 100 + t1 * 10 + u1;
+                let randU1 = rand(0, 8);
+                let u2 = rand(randU1 + 1, 9); 
+                n1 = h1 * 100 + t1 * 10 + randU1;
                 n2 = t2 * 10 + u2;
             }
             else { 
-                // 3けた-2けた 一の位も十の位も繰り下がる問題
                 let h1 = rand(1, 9);
-                let u1 = rand(0, 8);
-                let u2 = rand(u1 + 1, 9); // 一の位が繰り下がる
+                let randU1 = rand(0, 8);
+                let u2 = rand(randU1 + 1, 9); 
                 let t2 = rand(1, 9);
-                let t1 = rand(0, t2);     // 十の位も繰り下がる
-                n1 = h1 * 100 + t1 * 10 + u1;
+                let t1 = rand(0, t2);     
+                n1 = h1 * 100 + t1 * 10 + randU1;
                 n2 = t2 * 10 + u2;
             }
             
@@ -1624,6 +1682,8 @@
             if (els.input1) els.input1.value = n1; 
             if (els.input2) els.input2.value = n2; 
             
+            state.lastSpokenGuide = ""; // 履歴をリセット
+            
             initVisuals(); 
             renderHissan(); 
             saveProgress();
@@ -1631,19 +1691,20 @@
             if (els.headerAns) els.headerAns.value = "?"; 
             if (els.msg) els.msg.textContent = "";
 
-            if (state.questionCount === 0) {
-                setTimeout(() => {
+            setTimeout(() => {
+                if (state.questionCount === 0) {
                     updateGuide(true);
-                }, 800);
-            } else {
-                updateGuide(false);
-                resetIdleTimer();
-            }
+                } else {
+                    updateGuide(false);
+                    resetIdleTimer();
+                }
+            }, 800);
         }
         
         function checkAnswer() {
             clearIdleTimer();
-            if (state.isAnsweredCorrectly) { if (Date.now() - state.lastGuideTime < 3000) return; state.lastGuideTime = Date.now(); speak(praises[10]); return; }
+            // 既に正解している場合にボタンを押したときの案内（強制再生）
+            if (state.isAnsweredCorrectly) { if (Date.now() - state.lastGuideTime < 3000) return; state.lastGuideTime = Date.now(); speak(praises[10], true); return; }
             const u100 = parseInt(document.getElementById('ans-100')?.value) || 0; const u10 = parseInt(document.getElementById('ans-10')?.value) || 0; const u1 = parseInt(document.getElementById('ans-1')?.value) || 0;
             if (u100 * 100 + u10 * 10 + u1 === state.ans) {
                 state.isAnsweredCorrectly = true;
@@ -1651,12 +1712,14 @@
                 saveProgress(); 
                 updateLevelUI(); 
                 
-                if (state.questionCount === 30) speak(praises[8]);
-                else if (state.questionCount % 5 === 0) speak(`レベルアップ！しょうごうが、${state.titles[Math.min(Math.floor(state.questionCount / 5), state.titles.length - 1)]}になったよ！おめでとう！`);
+                // 正解時、レベルアップ時、クリア時の音声は強制的に鳴らす（第2引数に true を設定）
+                if (state.questionCount === 30) speak(praises[8], true);
+                else if (state.questionCount % 5 === 0) speak(`レベルアップ！しょうごうが、${state.titles[Math.min(Math.floor(state.questionCount / 5), state.titles.length - 1)]}になったよ！おめでとう！`, true);
                 else { 
                     let pIdx; do { pIdx = Math.floor(Math.random() * 8); } while (pIdx === state.lastPraiseIndex);
-                    state.lastPraiseIndex = pIdx; speak(praises[pIdx]);
+                    state.lastPraiseIndex = pIdx; speak(praises[pIdx], true);
                 }
+                
                 if (els.bigText) {
                     els.bigText.classList.add('show'); 
                     setTimeout(() => els.bigText.classList.remove('show'), 2000);
@@ -1664,7 +1727,9 @@
                 for(let i=0; i<100; i++){ const p = document.createElement('div'); p.className='confetti-piece'; p.style.left = Math.random() * 100 + 'vw'; p.style.backgroundColor = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4caf50','#8bc34a','#cddc39','#ffeb3b','#ffc107','#ff9800','#ff5722'][Math.floor(Math.random()*16)]; p.style.animationDuration = (Math.random() * 3 + 2) + 's'; p.style.animationDelay = (Math.random() * 2) + 's'; document.body.appendChild(p); setTimeout(()=>p.remove(), 5000); }
                 if (els.headerAns) els.headerAns.value = state.ans; 
                 if (state.questionCount === 30) setTimeout(() => { if(els.masterModal) els.masterModal.style.display = 'flex'; }, 500);
-            } else { speak(praises[9]); }
+            } else { 
+                speak(praises[9]); // 不正解時のヒントは設定に従う
+            }
         }
 
         const initApp = () => {
@@ -1687,17 +1752,14 @@
             }
         };
         
-        initApp();
-        
         // 最初の画面の音声ガイドボタンの処理を追加
         if (els.guideAudioBtn) {
             let guideTimeoutIds = [];
             els.guideAudioBtn.addEventListener('click', async () => {
                 await unlockAudio();
-                // スペースをなくし、自然な読点（、）だけを残してスムーズに読ませる
-                speak("くりさがりのあるひきざんを、マスターしよう！モードをえらんだら、こたえじどうのチェックもかくにんして、けいさんスタートをおしてね。ひきざんのときは、ひくかずのぶんだけ、おかねをしたのわくにうごかそう。ひけないときは、となりのくらいからくりさげて、ばらにしようね。おかねをうごかすと、ひっさんのけいさんもすすむよ。");
+                // 説明ボタンは force=true を渡して強制的に音を鳴らす
+                speak("くりさがりのあるひきざんを、マスターしよう！モードをえらんだら、こたえじどうのチェックもかくにんして、けいさんスタートをおしてね。ひきざんのときは、ひくかずのぶんだけ、おかねをしたのわくにうごかそう。ひけないときは、となりのくらいからくりさげて、ばらにしようね。さいごに、ひっさんのこたえを、にゅうりょくします。", true);
                 
-                // 前回のタイマーをクリア
                 guideTimeoutIds.forEach(id => clearTimeout(id));
                 guideTimeoutIds = [];
 
@@ -1716,44 +1778,36 @@
 
                 clearAllHighlights();
 
-                // 音声の進行に合わせてハイライトを順番に表示（スムーズな読みに合わせて秒数を微調整）
-                // 3.5秒後: "モードをえらんだら、"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(modeSelect) modeSelect.classList.add('highlight-border'); 
                 }, 3500));
 
-                // 5.5秒後: "こたえじどうのチェックもかくにんして、"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(autoAnswerSetting) autoAnswerSetting.classList.add('highlight-border'); 
                 }, 5500));
                 
-                // 8.5秒後: "けいさんスタートをおしてね。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(startBtn) startBtn.classList.add('highlight-border'); 
                 }, 8500));
 
-                // 11.5秒後: "ひきざんのときは、ひくかずのぶんだけ、おかねをしたのわくにうごかそう。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(guide1) guide1.classList.add('highlight-border'); 
                 }, 11500));
 
-                // 17.5秒後: "ひけないときは、となりのくらいからくりさげて、ばらにしようね。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(guide2) guide2.classList.add('highlight-border'); 
                 }, 17500));
 
-                // 23.5秒後: "おかねをうごかすと、ひっさんのけいさんもすすむよ。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(guide3) guide3.classList.add('highlight-border'); 
                 }, 23500));
 
-                // 全て終了 (29秒)
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                 }, 29000));
@@ -1763,9 +1817,7 @@
         if (els.startBtn) {
             els.startBtn.addEventListener('click', async () => { 
                 try {
-                    // 全ハイライトを消す
                     document.querySelectorAll('.highlight-border').forEach(el => el.classList.remove('highlight-border'));
-                    // 音声も止める
                     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                     if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
 
@@ -1825,6 +1877,13 @@
             els.settingAnswer.addEventListener('change', e => {
                 state.autoAnswer = e.target.checked;
                 if (state.isDroppedDown) syncHissanWithBot();
+                saveProgress();
+            });
+        }
+
+        if (els.settingAudio) {
+            els.settingAudio.addEventListener('change', e => {
+                state.audioGuide = e.target.checked;
                 saveProgress();
             });
         }
