@@ -830,6 +830,7 @@
             idleTimer: null
         };
 
+        // 不要なスペースを削除し、スムーズに読めるように調整
         const praises = [
             "せいかい！そのちょうしだよ。", 
             "すごい！てんさいだね。", 
@@ -839,9 +840,9 @@
             "おっ！だいせいかい！すごいすごい！",
             "そのちょうし！どんどんいこう！",
             "ピンポーン！だいせいかい！",
-            "おめでとう！30もん たっせいだね！きみは もう りっぱな ひき算マスターだよ！さいこうだね！", 
-            "あれれ？もういちど かんがえてみてね。", 
-            "つぎの もんだいを おしてね。"
+            "おめでとう！30もんたっせいだね！きみはもう、りっぱなひきざんマスターだよ！さいこうだね！", 
+            "あれれ？もういちどかんがえてみてね。", 
+            "つぎのもんだいをおしてね。"
         ];
 
         function updateLevelUI() {
@@ -939,7 +940,8 @@
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Say cheerfully and clearly with a high-pitched voice to a child in Japanese: ${text}` }] }],
+                        // 声のトーンを自然な高さ（cheerfully and clearly）に戻す
+                        contents: [{ parts: [{ text: `Say cheerfully and clearly to a child in Japanese: ${text}` }] }],
                         generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } }
                     })
                 });
@@ -976,7 +978,8 @@
                 const voices = window.speechSynthesis.getVoices();
                 const bestVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('ja')) || voices.find(v => v.lang.includes('ja'));
                 if (bestVoice) uttr.voice = bestVoice;
-                uttr.rate = 1.0; uttr.pitch = 1.6; uttr.volume = 1.0;
+                // ピッチを 1.6 から 1.2（自然な高さ）に戻す
+                uttr.rate = 1.0; uttr.pitch = 1.2; uttr.volume = 1.0;
                 window.speechSynthesis.speak(uttr);
             }
         }
@@ -1056,19 +1059,19 @@
             // 一の位が足りない時
             if (needBot1 > 0 && cur1 < needBot1) {
                 document.getElementById('arrow-carry-10')?.style.setProperty('display', 'block');
-                if (speakInstruction) msg = `${state.num1 % 10} から、${state.num2 % 10} は ひけないから、十のくらいから くりさげよう。`;
+                if (speakInstruction) msg = `${state.num1 % 10}から、${state.num2 % 10}はひけないから、十のくらいからくりさげよう。`;
             } 
             // 十の位が足りない時
             else if (needBot10 > 0 && cur10 < needBot10) {
                 document.getElementById('arrow-carry-100')?.style.setProperty('display', 'block');
-                if (speakInstruction) msg = `${Math.floor((state.num1 % 100)/10)} から、${Math.floor((state.num2 % 100)/10)} は ひけないから、百のくらいから くりさげよう。`;
+                if (speakInstruction) msg = `${Math.floor((state.num1 % 100)/10)}から、${Math.floor((state.num2 % 100)/10)}はひけないから、百のくらいからくりさげよう。`;
             } 
             // 足りているので下に降ろす時
             else if (needBot100 > 0 || needBot10 > 0 || needBot1 > 0) {
                 if (needBot100 > 0) { const a = document.getElementById('arrow-top-100'); if(a) a.style.display = 'block'; }
                 if (needBot10 > 0) { const a = document.getElementById('arrow-top-10'); if(a) a.style.display = 'block'; }
                 if (needBot1 > 0) { const a = document.getElementById('arrow-top-1'); if(a) a.style.display = 'block'; }
-                if (speakInstruction) msg = `${itemText}を ひくかずの ぶんだけ、したに おろそう。`;
+                if (speakInstruction) msg = `${itemText}を、ひくかずのぶんだけ、したにおろそう。`;
             }
 
             if (msg !== "") {
@@ -1394,7 +1397,7 @@
                     });
                 });
 
-                speak("のこった かずが こたえ だよ。");
+                speak("のこったかずが、こたえだよ。");
 
                 setTimeout(() => {
                     syncHissanWithBot();
@@ -1691,7 +1694,8 @@
             let guideTimeoutIds = [];
             els.guideAudioBtn.addEventListener('click', async () => {
                 await unlockAudio();
-                speak("くりさがりのある ひきざんを マスターしよう！ モードをえらんだら、こたえじどうの チェックも かくにんして、けいさんスタートを おしてね。ひきざんのときは、ひくかずの ぶんだけ、おかねを したの わくに うごかそう。ひけないときは、となりの くらいから くりさげて、ばらに しようね。おかねを うごかすと、ひっさんの けいさんも すすむよ。");
+                // スペースをなくし、自然な読点（、）だけを残してスムーズに読ませる
+                speak("くりさがりのあるひきざんを、マスターしよう！モードをえらんだら、こたえじどうのチェックもかくにんして、けいさんスタートをおしてね。ひきざんのときは、ひくかずのぶんだけ、おかねをしたのわくにうごかそう。ひけないときは、となりのくらいからくりさげて、ばらにしようね。おかねをうごかすと、ひっさんのけいさんもすすむよ。");
                 
                 // 前回のタイマーをクリア
                 guideTimeoutIds.forEach(id => clearTimeout(id));
@@ -1712,47 +1716,47 @@
 
                 clearAllHighlights();
 
-                // 音声の進行に合わせてハイライトを順番に表示
-                // 4.0秒後: "モードをえらんだら、"
+                // 音声の進行に合わせてハイライトを順番に表示（スムーズな読みに合わせて秒数を微調整）
+                // 3.5秒後: "モードをえらんだら、"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(modeSelect) modeSelect.classList.add('highlight-border'); 
-                }, 4000));
+                }, 3500));
 
-                // 6.0秒後: "こたえじどうの チェックも かくにんして、"
+                // 5.5秒後: "こたえじどうのチェックもかくにんして、"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(autoAnswerSetting) autoAnswerSetting.classList.add('highlight-border'); 
-                }, 6000));
+                }, 5500));
                 
-                // 9.5秒後: "けいさんスタートを おしてね。"
+                // 8.5秒後: "けいさんスタートをおしてね。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(startBtn) startBtn.classList.add('highlight-border'); 
-                }, 9500));
+                }, 8500));
 
-                // 12.0秒後: "ひきざんのときは、ひくかずの ぶんだけ、おかねを したの わくに うごかそう。"
+                // 11.5秒後: "ひきざんのときは、ひくかずのぶんだけ、おかねをしたのわくにうごかそう。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(guide1) guide1.classList.add('highlight-border'); 
-                }, 12000));
+                }, 11500));
 
-                // 18.5秒後: "ひけないときは、となりの くらいから くりさげて、ばらに しようね。"
+                // 17.5秒後: "ひけないときは、となりのくらいからくりさげて、ばらにしようね。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(guide2) guide2.classList.add('highlight-border'); 
-                }, 18500));
+                }, 17500));
 
-                // 25.0秒後: "おかねを うごかすと、ひっさんの けいさんも すすむよ。"
+                // 23.5秒後: "おかねをうごかすと、ひっさんのけいさんもすすむよ。"
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
                     if(guide3) guide3.classList.add('highlight-border'); 
-                }, 25000));
+                }, 23500));
 
-                // 全て終了 (31秒)
+                // 全て終了 (29秒)
                 guideTimeoutIds.push(setTimeout(() => { 
                     clearAllHighlights(); 
-                }, 31000));
+                }, 29000));
             });
         }
 
